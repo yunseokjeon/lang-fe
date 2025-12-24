@@ -16,6 +16,8 @@ import {
   Infinity,
   Volume2,
   RotateCw,
+  BookOpen,
+  Eye,
 } from "lucide-react";
 
 export default function Home() {
@@ -28,7 +30,23 @@ export default function Home() {
   const [isDraggingB, setIsDraggingB] = useState(false);
   const [speedValue, setSpeedValue] = useState(1.2); // Speed multiplier
   const [customValue, setCustomValue] = useState(75); // Custom value (0-100)
+  const [volumeValue, setVolumeValue] = useState(80); // Volume (0-100)
   const progressRef = useRef<HTMLDivElement>(null);
+
+  // Resizable grid 상태
+  const [horizontalSplit, setHorizontalSplit] = useState(50);
+  const [verticalSplit, setVerticalSplit] = useState(50);
+  const [regionMarkers] = useState([
+    { id: 1, position: 1000 },
+    { id: 2, position: 2000 },
+    { id: 3, position: 3000 },
+    { id: 4, position: 4000 },
+  ]);
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  // 볼륨 컨트롤 세로 분할
+  const [volumeSplit, setVolumeSplit] = useState(50);
+  const volumeRef = useRef<HTMLDivElement>(null);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -81,11 +99,14 @@ export default function Home() {
 
   const handleSliderDrag = (
     e: React.MouseEvent<HTMLDivElement>,
-    sliderType: "speed" | "custom"
+    sliderType: "speed" | "custom" | "volume"
   ) => {
     e.preventDefault();
     const startX = e.clientX;
-    const startValue = sliderType === "speed" ? speedValue : customValue;
+    const startValue =
+      sliderType === "speed" ? speedValue :
+      sliderType === "volume" ? volumeValue :
+      customValue;
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
       const deltaX = moveEvent.clientX - startX;
@@ -94,6 +115,8 @@ export default function Home() {
 
       if (sliderType === "speed") {
         setSpeedValue(Math.max(0.5, Math.min(3.0, newValue)));
+      } else if (sliderType === "volume") {
+        setVolumeValue(Math.max(0, Math.min(100, Math.round(newValue))));
       } else {
         setCustomValue(Math.max(0, Math.min(100, Math.round(newValue))));
       }
@@ -104,6 +127,87 @@ export default function Home() {
       document.removeEventListener("mouseup", handleMouseUp);
     };
 
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+  };
+
+  const handleVerticalDrag = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!gridRef.current) return;
+
+    const startX = e.clientX;
+    const startSplit = verticalSplit;
+    const rect = gridRef.current.getBoundingClientRect();
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      const deltaX = moveEvent.clientX - startX;
+      const deltaPercent = (deltaX / rect.width) * 100;
+      const newSplit = Math.max(20, Math.min(80, startSplit + deltaPercent));
+      setVerticalSplit(newSplit);
+    };
+
+    const handleMouseUp = () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+  };
+
+  const handleHorizontalDrag = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!gridRef.current) return;
+
+    const startY = e.clientY;
+    const startSplit = horizontalSplit;
+    const rect = gridRef.current.getBoundingClientRect();
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      const deltaY = moveEvent.clientY - startY;
+      const deltaPercent = (deltaY / rect.height) * 100;
+      const newSplit = Math.max(20, Math.min(80, startSplit + deltaPercent));
+      setHorizontalSplit(newSplit);
+    };
+
+    const handleMouseUp = () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+  };
+
+  const jumpToMarker = (position: number) => {
+    setCurrentTime(position);
+  };
+
+  const handleVolumeSplitDrag = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const container = volumeRef.current;
+    if (!container) return;
+
+    const updateSplit = (clientY: number) => {
+      const rect = container.getBoundingClientRect();
+      const y = clientY - rect.top;
+      const percentage = Math.max(0, Math.min(100, (y / rect.height) * 100));
+      setVolumeSplit(percentage);
+    };
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      moveEvent.preventDefault();
+      updateSplit(moveEvent.clientY);
+    };
+
+    const handleMouseUp = () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    updateSplit(e.clientY);
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
   };
@@ -274,6 +378,145 @@ export default function Home() {
           <button className="bg-blue-800/80 hover:bg-blue-800 text-white p-3 rounded-xl text-sm font-bold transition">
             ALL
           </button>
+        </div>
+
+        {/* 5번 이미지 스타일 컨트롤 */}
+        <div className="px-4 pb-3 flex flex-col items-center gap-2">
+          <div
+            ref={volumeRef}
+            style={{
+              position: "relative",
+              width: "80px",
+              height: "120px",
+              border: "2px solid #333",
+              borderRadius: "8px",
+              overflow: "hidden",
+              cursor: "row-resize",
+              userSelect: "none",
+              backgroundColor: "#1d4ed8"
+            }}
+            onMouseDown={handleVolumeSplitDrag}
+          >
+            {/* 위쪽 영역 - 흰색 */}
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                height: `${(volumeSplit / 100) * 120}px`,
+                backgroundColor: "#ffffff",
+                pointerEvents: "none",
+              }}
+            >
+              <div style={{ fontSize: "10px", textAlign: "center", paddingTop: "8px", color: "#666" }}>
+                {volumeSplit.toFixed(0)}%
+              </div>
+            </div>
+
+            {/* 가로 구분선 */}
+            <div
+              style={{
+                position: "absolute",
+                left: 0,
+                right: 0,
+                top: `${(volumeSplit / 100) * 120}px`,
+                transform: "translateY(-50%)",
+                height: "3px",
+                backgroundColor: "#dc2626",
+                pointerEvents: "none",
+                zIndex: 20,
+              }}
+            >
+            </div>
+          </div>
+          <div className="text-white text-xs font-bold">
+            Split: {volumeSplit.toFixed(0)}% | Height: {((volumeSplit / 100) * 120).toFixed(1)}px
+          </div>
+        </div>
+
+        {/* Resizable 2x2 Grid */}
+        <div className="px-4 pb-3">
+          <div
+            ref={gridRef}
+            className="relative w-full h-24 mx-auto"
+            style={{ userSelect: "none" }}
+          >
+            {/* 왼쪽 위 - 책 아이콘 */}
+            <div
+              className="absolute bg-slate-200 hover:bg-slate-100 text-slate-600 rounded-tl-lg flex flex-col items-center justify-center cursor-pointer transition"
+              style={{
+                left: 0,
+                top: 0,
+                width: `${verticalSplit}%`,
+                height: `${horizontalSplit}%`,
+              }}
+              onClick={() => jumpToMarker(regionMarkers[0].position)}
+            >
+              <BookOpen size={20} />
+            </div>
+
+            {/* 오른쪽 위 - 비어있음 */}
+            <div
+              className="absolute bg-slate-200 hover:bg-slate-100 text-slate-600 rounded-tr-lg flex flex-col items-center justify-center cursor-pointer transition"
+              style={{
+                left: `${verticalSplit}%`,
+                top: 0,
+                width: `${100 - verticalSplit}%`,
+                height: `${horizontalSplit}%`,
+              }}
+              onClick={() => jumpToMarker(regionMarkers[1].position)}
+            >
+            </div>
+
+            {/* 왼쪽 아래 - 왼쪽 화살표 */}
+            <div
+              className="absolute bg-blue-600 hover:bg-blue-500 text-white rounded-bl-lg flex flex-col items-center justify-center cursor-pointer transition"
+              style={{
+                left: 0,
+                top: `${horizontalSplit}%`,
+                width: `${verticalSplit}%`,
+                height: `${100 - horizontalSplit}%`,
+              }}
+              onClick={() => jumpToMarker(regionMarkers[2].position)}
+            >
+              <SkipBack size={20} />
+            </div>
+
+            {/* 오른쪽 아래 - 눈 아이콘 */}
+            <div
+              className="absolute bg-teal-500 hover:bg-teal-400 text-white rounded-br-lg flex flex-col items-center justify-center cursor-pointer transition"
+              style={{
+                left: `${verticalSplit}%`,
+                top: `${horizontalSplit}%`,
+                width: `${100 - verticalSplit}%`,
+                height: `${100 - horizontalSplit}%`,
+              }}
+              onClick={() => jumpToMarker(regionMarkers[3].position)}
+            >
+              <Eye size={20} />
+            </div>
+
+            {/* 세로 구분선 */}
+            <div
+              className="absolute top-0 bottom-0 w-1 bg-blue-900/50 cursor-col-resize z-10 hover:bg-blue-400 transition"
+              style={{
+                left: `${verticalSplit}%`,
+                transform: "translateX(-50%)",
+              }}
+              onMouseDown={handleVerticalDrag}
+            />
+
+            {/* 가로 구분선 */}
+            <div
+              className="absolute left-0 right-0 h-1 bg-blue-900/50 cursor-row-resize z-10 hover:bg-blue-400 transition"
+              style={{
+                top: `${horizontalSplit}%`,
+                transform: "translateY(-50%)",
+              }}
+              onMouseDown={handleHorizontalDrag}
+            />
+          </div>
         </div>
 
         {/* Number Buttons */}
