@@ -110,7 +110,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-600 to-slate-500 flex items-center justify-center p-4">
-      <div className="w-full max-w-sm bg-gradient-to-b from-blue-900 to-blue-700 rounded-3xl shadow-2xl overflow-hidden">
+      <div className="w-full max-w-[400px] bg-gradient-to-b from-blue-900 to-blue-700 rounded-3xl shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 text-white">
           <button className="p-2 hover:bg-white/10 rounded-lg transition">
