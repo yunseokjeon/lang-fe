@@ -254,7 +254,7 @@ export default function Home() {
 
         {/* Control Grid - 2 rows combined */}
         <div className="px-4" style={{ paddingBottom: '2rem' }}>
-          <div className="grid grid-cols-5 gap-2.5" style={{ gridTemplateRows: "auto auto" }}>
+          <div className="grid grid-cols-5" style={{ gridTemplateRows: "auto auto", columnGap: "0.625rem", rowGap: "1rem" }}>
             {/* Volume - spans 2 rows */}
             <div
               ref={volumeRef}
