@@ -248,7 +248,7 @@ export default function Home() {
             <div
               ref={volumeRef}
               onMouseDown={handleVolumeDrag}
-              className="relative overflow-hidden text-white rounded-xl flex flex-col items-center justify-end pb-2 select-none cursor-ns-resize row-span-2"
+              className="relative overflow-hidden text-white rounded-lg flex flex-col items-center justify-end pb-2 select-none cursor-ns-resize row-span-2"
               style={{
                 background: `linear-gradient(to top, #14b8a6 ${volumeValue}%, #475569 ${volumeValue}%)`,
                 gridRow: "1 / 3",
