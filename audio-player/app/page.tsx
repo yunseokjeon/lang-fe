@@ -12,7 +12,7 @@ import {
   Menu,
   Repeat,
   Volume2,
-  Glasses,
+  Gauge,
 } from "lucide-react";
 
 export default function Home() {
@@ -27,6 +27,7 @@ export default function Home() {
   const [volumeValue, setVolumeValue] = useState(71);
   const progressRef = useRef<HTMLDivElement>(null);
   const volumeRef = useRef<HTMLDivElement>(null);
+  const speedRef = useRef<HTMLDivElement>(null);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -107,13 +108,23 @@ export default function Home() {
 
   const handleSpeedDrag = (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
-    const startX = e.clientX;
-    const startValue = speedValue;
+    const container = speedRef.current;
+    if (!container) return;
+
+    const updateSpeed = (clientY: number) => {
+      const rect = container.getBoundingClientRect();
+      const y = clientY - rect.top;
+      const percentage = Math.max(0, Math.min(100, 100 - (y / rect.height) * 100));
+      // 0% = 0.5x, 100% = 3.0x
+      const newSpeed = 0.5 + (percentage / 100) * 2.5;
+      setSpeedValue(Math.round(newSpeed * 10) / 10);
+    };
+
+    updateSpeed(e.clientY);
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
-      const deltaX = moveEvent.clientX - startX;
-      const newValue = startValue + deltaX * 0.01;
-      setSpeedValue(Math.max(0.5, Math.min(3.0, newValue)));
+      moveEvent.preventDefault();
+      updateSpeed(moveEvent.clientY);
     };
 
     const handleMouseUp = () => {
@@ -139,7 +150,7 @@ export default function Home() {
         </div>
 
         {/* Title and Time Display */}
-        <div className="text-center text-white px-6 pb-4">
+        <div className="text-center text-white px-6" style={{ paddingBottom: '2.5rem' }}>
           <h1 className="text-base font-normal mb-3 opacity-90">
             Hackers TOEFL Chapter 1
           </h1>
@@ -149,7 +160,7 @@ export default function Home() {
         </div>
 
         {/* Progress Bar Section */}
-        <div className="px-6 pb-4">
+        <div className="px-6" style={{ paddingBottom: '2.5rem' }}>
           <div className="relative pb-6">
             {/* Progress Bar Container */}
             <div className="relative" ref={progressRef}>
@@ -220,7 +231,7 @@ export default function Home() {
         </div>
 
         {/* Main Control Buttons */}
-        <div className="grid grid-cols-5 gap-2.5 px-4 pb-3">
+        <div className="grid grid-cols-5 gap-2.5 px-4" style={{ paddingBottom: '2rem' }}>
           <button className="bg-teal-600/80 hover:bg-teal-600 text-white p-3.5 rounded-xl flex items-center justify-center transition">
             <ChevronLeft size={24} />
           </button>
@@ -242,16 +253,17 @@ export default function Home() {
         </div>
 
         {/* Control Grid - 2 rows combined */}
-        <div className="px-4 pb-3">
-          <div className="grid grid-cols-5 gap-2.5" style={{ gridTemplateRows: "auto auto" }}>
+        <div className="px-4" style={{ paddingBottom: '2rem' }}>
+          <div className="grid grid-cols-5" style={{ gridTemplateRows: "auto auto", columnGap: "0.625rem", rowGap: "1rem" }}>
             {/* Volume - spans 2 rows */}
             <div
               ref={volumeRef}
               onMouseDown={handleVolumeDrag}
-              className="relative overflow-hidden text-white rounded-lg flex flex-col items-center justify-end pb-2 select-none cursor-ns-resize row-span-2"
+              className="relative overflow-hidden text-white flex flex-col items-center justify-end pb-2 select-none cursor-ns-resize row-span-2"
               style={{
                 background: `linear-gradient(to top, #14b8a6 ${volumeValue}%, #475569 ${volumeValue}%)`,
                 gridRow: "1 / 3",
+                borderRadius: "1rem",
               }}
             >
               <Volume2 size={18} className="z-10 mb-1" />
@@ -260,12 +272,17 @@ export default function Home() {
 
             {/* Speed - spans 2 rows */}
             <div
+              ref={speedRef}
               onMouseDown={handleSpeedDrag}
-              className="bg-slate-600/80 hover:bg-slate-600 text-white rounded-xl flex flex-col items-center justify-end pb-2 select-none cursor-ew-resize row-span-2"
-              style={{ gridRow: "1 / 3" }}
+              className="relative overflow-hidden text-white flex flex-col items-center justify-end pb-2 select-none cursor-ns-resize row-span-2"
+              style={{
+                background: `linear-gradient(to top, #14b8a6 ${((speedValue - 0.5) / 2.5) * 100}%, #475569 ${((speedValue - 0.5) / 2.5) * 100}%)`,
+                gridRow: "1 / 3",
+                borderRadius: "1rem",
+              }}
             >
-              <Glasses size={18} className="mb-1" />
-              <span className="text-xs font-semibold">{speedValue.toFixed(1)}x</span>
+              <Gauge size={18} className="z-10 mb-1" />
+              <span className="text-xs font-semibold z-10">{speedValue.toFixed(1)}x</span>
             </div>
 
             {/* Row 1: Repeat, x5, x10/inf */}
@@ -294,7 +311,7 @@ export default function Home() {
         </div>
 
         {/* Number Buttons */}
-        <div className="grid grid-cols-5 gap-2.5 px-4 pb-5">
+        <div className="grid grid-cols-5 gap-2.5 px-4" style={{ paddingBottom: '2.5rem' }}>
           {[1, 2, 3, 4, 5].map((num) => (
             <button
               key={num}
