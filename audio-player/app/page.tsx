@@ -285,16 +285,18 @@ export default function Home() {
               <span className="text-xs font-semibold z-10">{speedValue.toFixed(1)}x</span>
             </div>
 
-            {/* Row 1: Repeat, x5, x10/inf */}
-            <button className="bg-slate-500/60 hover:bg-slate-500 text-white rounded-xl h-12 flex items-center justify-center transition">
-              <Repeat size={20} />
+            {/* Row 1: Repeat x5, Repeat x10, Infinite */}
+            <button className="bg-slate-500/60 hover:bg-slate-500 text-white rounded-xl h-12 flex flex-col items-center justify-center transition">
+              <Repeat size={18} />
+              <span className="text-[10px] font-semibold -mt-0.5">x5</span>
             </button>
-            <button className="bg-slate-500/60 hover:bg-slate-500 text-white rounded-xl h-12 flex items-center justify-center transition text-xs font-semibold">
-              x5
+            <button className="bg-slate-500/60 hover:bg-slate-500 text-white rounded-xl h-12 flex flex-col items-center justify-center transition">
+              <Repeat size={18} />
+              <span className="text-[10px] font-semibold -mt-0.5">x10</span>
             </button>
-            <button className="bg-slate-500/60 hover:bg-slate-500 text-white rounded-xl h-12 flex flex-col items-center justify-center transition text-[10px] font-semibold">
-              <span>x10</span>
-              <span className="text-[8px]">inf</span>
+            <button className="bg-slate-500/60 hover:bg-slate-500 text-white rounded-xl h-12 flex flex-col items-center justify-center transition">
+              <span className="text-xl font-light leading-none">∞</span>
+              <span className="text-[10px] font-semibold -mt-0.5">Inf</span>
             </button>
 
             {/* Row 2: ALL, A, B */}
