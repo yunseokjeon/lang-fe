@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Play,
   Pause,
@@ -8,7 +8,7 @@ import {
   Rewind,
   ChevronLeft,
   ChevronRight,
-  Share2,
+  Download,
   Menu,
   Repeat,
   Volume2,
@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 export default function Home() {
+  const [showSplash, setShowSplash] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(1826); // 30:26 in seconds
   const [duration, setDuration] = useState(2506); // Total duration (~41:46)
@@ -28,6 +29,13 @@ export default function Home() {
   const progressRef = useRef<HTMLDivElement>(null);
   const volumeRef = useRef<HTMLDivElement>(null);
   const speedRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -136,13 +144,23 @@ export default function Home() {
     document.addEventListener("mouseup", handleMouseUp);
   };
 
+  if (showSplash) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{
+        background: "linear-gradient(to bottom, #5b6b8a 0%, #4a7a8c 50%, #4a9a9a 100%)"
+      }}>
+        <h1 className="text-white text-4xl font-light tracking-[0.5em]">LANG</h1>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-400 to-sky-500 flex items-center justify-center p-4">
       <div className="w-full max-w-[400px] bg-gradient-to-b from-sky-500 to-sky-600 rounded-3xl shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 text-white">
           <button className="p-2 hover:bg-white/10 rounded-lg transition">
-            <Share2 size={20} />
+            <Download size={20} />
           </button>
           <button className="p-2 hover:bg-white/10 rounded-lg transition">
             <Menu size={24} />
@@ -285,16 +303,18 @@ export default function Home() {
               <span className="text-xs font-semibold z-10">{speedValue.toFixed(1)}x</span>
             </div>
 
-            {/* Row 1: Repeat, x5, x10/inf */}
-            <button className="bg-slate-500/60 hover:bg-slate-500 text-white rounded-xl h-12 flex items-center justify-center transition">
-              <Repeat size={20} />
+            {/* Row 1: Repeat x5, Repeat x10, Infinite */}
+            <button className="bg-slate-500/60 hover:bg-slate-500 text-white rounded-xl h-12 flex flex-col items-center justify-center transition">
+              <Repeat size={18} />
+              <span className="text-[10px] font-semibold -mt-0.5">x5</span>
             </button>
-            <button className="bg-slate-500/60 hover:bg-slate-500 text-white rounded-xl h-12 flex items-center justify-center transition text-xs font-semibold">
-              x5
+            <button className="bg-slate-500/60 hover:bg-slate-500 text-white rounded-xl h-12 flex flex-col items-center justify-center transition">
+              <Repeat size={18} />
+              <span className="text-[10px] font-semibold -mt-0.5">x10</span>
             </button>
-            <button className="bg-slate-500/60 hover:bg-slate-500 text-white rounded-xl h-12 flex flex-col items-center justify-center transition text-[10px] font-semibold">
-              <span>x10</span>
-              <span className="text-[8px]">inf</span>
+            <button className="bg-slate-500/60 hover:bg-slate-500 text-white rounded-xl h-12 flex flex-col items-center justify-center transition">
+              <span className="text-xl font-light leading-none">∞</span>
+              <span className="text-[10px] font-semibold -mt-0.5">Inf</span>
             </button>
 
             {/* Row 2: ALL, A, B */}
