@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Play,
   Pause,
@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 export default function Home() {
+  const [showSplash, setShowSplash] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(1826); // 30:26 in seconds
   const [duration, setDuration] = useState(2506); // Total duration (~41:46)
@@ -28,6 +29,13 @@ export default function Home() {
   const progressRef = useRef<HTMLDivElement>(null);
   const volumeRef = useRef<HTMLDivElement>(null);
   const speedRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -135,6 +143,16 @@ export default function Home() {
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
   };
+
+  if (showSplash) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{
+        background: "linear-gradient(to bottom, #5b6b8a 0%, #4a7a8c 50%, #4a9a9a 100%)"
+      }}>
+        <h1 className="text-white text-4xl font-light tracking-[0.5em]">LANG</h1>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-400 to-sky-500 flex items-center justify-center p-4">
