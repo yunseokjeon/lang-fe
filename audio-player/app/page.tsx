@@ -8,7 +8,7 @@ import {
   Rewind,
   ChevronLeft,
   ChevronRight,
-  Share2,
+  Download,
   Menu,
   Repeat,
   Volume2,
@@ -160,7 +160,7 @@ export default function Home() {
         {/* Header */}
         <div className="flex items-center justify-between p-4 text-white">
           <button className="p-2 hover:bg-white/10 rounded-lg transition">
-            <Share2 size={20} />
+            <Download size={20} />
           </button>
           <button className="p-2 hover:bg-white/10 rounded-lg transition">
             <Menu size={24} />
