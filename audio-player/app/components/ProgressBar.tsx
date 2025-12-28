@@ -3,7 +3,7 @@ import { formatShortTime } from "../utils/time";
 
 interface ProgressBarProps {
   currentTime: number;
-  setCurrentTime: (time: number) => void;
+  onSeek: (time: number) => void;
   duration: number;
   markerA: number;
   markerB: number;
@@ -18,7 +18,7 @@ interface ProgressBarProps {
 
 export default function ProgressBar({
   currentTime,
-  setCurrentTime,
+  onSeek,
   duration,
   markerA,
   markerB,
@@ -27,6 +27,17 @@ export default function ProgressBar({
   progressRef,
   handleMarkerDrag,
 }: ProgressBarProps) {
+  // duration이 0일 때 기본값 사용 (UI 표시용)
+  const displayDuration = duration || 100;
+  const hasFile = duration > 0;
+
+  // 마커 위치 계산 (파일이 없을 때: A=0%, B=100%)
+  const markerAPercent = hasFile ? (markerA / displayDuration) * 100 : 0;
+  const markerBPercent = hasFile ? (markerB / displayDuration) * 100 : 100;
+
+  // 프로그레스 퍼센트 계산
+  const progressPercent = hasFile ? (currentTime / displayDuration) * 100 : 0;
+
   return (
     <div className="px-6" style={{ paddingBottom: "2.5rem" }}>
       <div className="relative pb-6">
@@ -37,7 +48,7 @@ export default function ProgressBar({
               isDraggingA ? "cursor-grabbing" : "cursor-grab"
             }`}
             style={{
-              left: `${(markerA / duration) * 100}%`,
+              left: `${markerAPercent}%`,
               top: "-2px",
               transform: "translateX(-50%)",
             }}
@@ -60,7 +71,7 @@ export default function ProgressBar({
               isDraggingB ? "cursor-grabbing" : "cursor-grab"
             }`}
             style={{
-              left: `${(markerB / duration) * 100}%`,
+              left: `${markerBPercent}%`,
               top: "-2px",
               transform: "translateX(-50%)",
             }}
@@ -81,22 +92,15 @@ export default function ProgressBar({
           <input
             type="range"
             min="0"
-            max={duration}
+            max={displayDuration}
             value={currentTime}
-            onChange={(e) => setCurrentTime(Number(e.target.value))}
-            className="w-full h-2 bg-teal-600 rounded-lg appearance-none cursor-pointer slider relative z-10 mt-8"
+            onChange={(e) => onSeek(Number(e.target.value))}
+            disabled={!hasFile}
+            className={`w-full h-2 bg-teal-600 rounded-lg appearance-none slider relative z-10 mt-8 ${hasFile ? 'cursor-pointer' : 'cursor-not-allowed'}`}
             style={{
-              background: `linear-gradient(to right, #14b8a6 0%, #14b8a6 ${
-                (currentTime / duration) * 100
-              }%, #0d9488 ${(currentTime / duration) * 100}%, #0d9488 100%)`,
+              background: `linear-gradient(to right, #14b8a6 0%, #14b8a6 ${progressPercent}%, #0d9488 ${progressPercent}%, #0d9488 100%)`,
             }}
           />
-        </div>
-
-        {/* Time Labels Below Progress Bar */}
-        <div className="flex justify-between text-[11px] text-white/80 mt-2 px-0.5">
-          <span>{formatShortTime(currentTime)}</span>
-          <span>-{formatShortTime(duration - currentTime)}</span>
         </div>
       </div>
     </div>

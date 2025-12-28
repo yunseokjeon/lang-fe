@@ -10,12 +10,19 @@ import {
 interface PlaybackControlsProps {
   isPlaying: boolean;
   setIsPlaying: (playing: boolean) => void;
+  hasFile: boolean;
 }
 
 export default function PlaybackControls({
   isPlaying,
   setIsPlaying,
+  hasFile,
 }: PlaybackControlsProps) {
+  const handlePlayPause = () => {
+    if (!hasFile) return;
+    setIsPlaying(!isPlaying);
+  };
+
   return (
     <div
       className="grid grid-cols-5 gap-2.5 px-4"
@@ -28,8 +35,9 @@ export default function PlaybackControls({
         <Rewind size={24} />
       </button>
       <button
-        onClick={() => setIsPlaying(!isPlaying)}
-        className="bg-teal-600/80 hover:bg-teal-600 text-white p-3.5 rounded-xl flex items-center justify-center transition"
+        onClick={handlePlayPause}
+        disabled={!hasFile}
+        className={`${hasFile ? 'bg-teal-600/80 hover:bg-teal-600' : 'bg-teal-600/40 cursor-not-allowed'} text-white p-3.5 rounded-xl flex items-center justify-center transition`}
       >
         {isPlaying ? <Pause size={26} /> : <Play size={26} className="ml-0.5" />}
       </button>
