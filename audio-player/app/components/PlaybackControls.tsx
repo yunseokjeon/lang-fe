@@ -3,8 +3,8 @@ import {
   Pause,
   FastForward,
   Rewind,
-  ChevronLeft,
-  ChevronRight,
+  SkipBack,
+  SkipForward,
 } from "lucide-react";
 
 interface PlaybackControlsProps {
@@ -29,7 +29,7 @@ export default function PlaybackControls({
       style={{ paddingBottom: "2rem" }}
     >
       <button className="bg-teal-600/80 hover:bg-teal-600 text-white p-3.5 rounded-xl flex items-center justify-center transition">
-        <ChevronLeft size={24} />
+        <SkipBack size={24} />
       </button>
       <button className="bg-teal-600/80 hover:bg-teal-600 text-white p-3.5 rounded-xl flex items-center justify-center transition">
         <Rewind size={24} />
@@ -45,7 +45,7 @@ export default function PlaybackControls({
         <FastForward size={24} />
       </button>
       <button className="bg-teal-600/80 hover:bg-teal-600 text-white p-3.5 rounded-xl flex items-center justify-center transition">
-        <ChevronRight size={24} />
+        <SkipForward size={24} />
       </button>
     </div>
   );
