@@ -126,6 +126,62 @@ export default function Home() {
     setIsPlaying(playing);
   };
 
+  // 이전 파일로 이동 (순환)
+  const handleSkipPrevious = () => {
+    if (mediaFiles.length < 2 || currentFileIndex === null) return;
+
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+
+    const prevIndex = currentFileIndex === 0 ? mediaFiles.length - 1 : currentFileIndex - 1;
+    setCurrentFileIndex(prevIndex);
+    setCurrentTime(0);
+    setIsPlaying(false);
+  };
+
+  // 다음 파일로 이동 (순환)
+  const handleSkipNext = () => {
+    if (mediaFiles.length < 2 || currentFileIndex === null) return;
+
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+
+    const nextIndex = currentFileIndex === mediaFiles.length - 1 ? 0 : currentFileIndex + 1;
+    setCurrentFileIndex(nextIndex);
+    setCurrentTime(0);
+    setIsPlaying(false);
+  };
+
+  // 5초 뒤로 이동
+  const handleRewind = () => {
+    if (!audioRef.current) return;
+
+    const newTime = currentTime - 5;
+    if (newTime < 0) {
+      audioRef.current.currentTime = 0;
+      setCurrentTime(0);
+    } else {
+      audioRef.current.currentTime = newTime;
+      setCurrentTime(newTime);
+    }
+  };
+
+  // 5초 앞으로 이동
+  const handleFastForward = () => {
+    if (!audioRef.current) return;
+
+    const newTime = currentTime + 5;
+    if (newTime > duration) {
+      audioRef.current.currentTime = duration;
+      setCurrentTime(duration);
+    } else {
+      audioRef.current.currentTime = newTime;
+      setCurrentTime(newTime);
+    }
+  };
+
   // 컴포넌트 언마운트 시 URL 정리
   useEffect(() => {
     return () => {
@@ -167,7 +223,16 @@ export default function Home() {
           progressRef={progressRef}
           handleMarkerDrag={handleMarkerDrag}
         />
-        <PlaybackControls isPlaying={isPlaying} setIsPlaying={togglePlayPause} hasFile={!!audioFile} />
+        <PlaybackControls
+          isPlaying={isPlaying}
+          setIsPlaying={togglePlayPause}
+          hasFile={!!audioFile}
+          onSkipPrevious={handleSkipPrevious}
+          onSkipNext={handleSkipNext}
+          onRewind={handleRewind}
+          onFastForward={handleFastForward}
+          hasMultipleFiles={mediaFiles.length >= 2}
+        />
         <ControlGrid
           volumeValue={volumeValue}
           speedValue={speedValue}
