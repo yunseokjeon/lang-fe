@@ -10,13 +10,18 @@ import PlaybackControls from "./components/PlaybackControls";
 import ControlGrid from "./components/ControlGrid";
 import NumberButtons from "./components/NumberButtons";
 
+export interface MediaFile {
+  file: File;
+  url: string;
+}
+
 export default function Home() {
   const [showSplash, setShowSplash] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [audioFile, setAudioFile] = useState<File | null>(null);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
+  const [currentFileIndex, setCurrentFileIndex] = useState<number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [markerA, setMarkerA] = useState(0);
   const [markerB, setMarkerB] = useState(100);
@@ -44,15 +49,38 @@ export default function Home() {
     return () => clearTimeout(timer);
   }, []);
 
-  // 파일 업로드 핸들러
+  // 현재 선택된 파일 정보
+  const currentMedia = currentFileIndex !== null ? mediaFiles[currentFileIndex] : null;
+  const audioUrl = currentMedia?.url || null;
+  const audioFile = currentMedia?.file || null;
+
+  // 파일 업로드 핸들러 (최대 2개)
   const handleFileUpload = (file: File) => {
-    // 이전 URL 정리
-    if (audioUrl) {
-      URL.revokeObjectURL(audioUrl);
+    if (mediaFiles.length >= 2) {
+      alert("최대 2개의 파일만 업로드할 수 있습니다.");
+      return;
     }
     const url = URL.createObjectURL(file);
-    setAudioFile(file);
-    setAudioUrl(url);
+    const newMediaFile: MediaFile = { file, url };
+    setMediaFiles((prev) => [...prev, newMediaFile]);
+
+    // 첫 번째 파일이면 자동 선택
+    if (mediaFiles.length === 0) {
+      setCurrentFileIndex(0);
+      setCurrentTime(0);
+      setIsPlaying(false);
+    }
+  };
+
+  // 파일 선택 핸들러 (더블클릭 시)
+  const handleSelectFile = (index: number) => {
+    if (index === currentFileIndex) return;
+
+    // 재생 중이면 멈춤
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+    setCurrentFileIndex(index);
     setCurrentTime(0);
     setIsPlaying(false);
   };
@@ -101,11 +129,9 @@ export default function Home() {
   // 컴포넌트 언마운트 시 URL 정리
   useEffect(() => {
     return () => {
-      if (audioUrl) {
-        URL.revokeObjectURL(audioUrl);
-      }
+      mediaFiles.forEach((media) => URL.revokeObjectURL(media.url));
     };
-  }, [audioUrl]);
+  }, [mediaFiles]);
 
   if (showSplash) {
     return <SplashScreen />;
@@ -123,7 +149,12 @@ export default function Home() {
         />
       )}
       <div className="w-full max-w-[400px] bg-gradient-to-b from-sky-500 to-sky-600 rounded-3xl shadow-2xl overflow-hidden">
-        <Header onFileUpload={handleFileUpload} />
+        <Header
+          onFileUpload={handleFileUpload}
+          mediaFiles={mediaFiles}
+          currentFileIndex={currentFileIndex}
+          onSelectFile={handleSelectFile}
+        />
         <TimeDisplay currentTime={currentTime} fileName={audioFile?.name || null} hasFile={!!audioFile} />
         <ProgressBar
           currentTime={currentTime}
