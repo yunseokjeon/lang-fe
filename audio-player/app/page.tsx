@@ -27,8 +27,8 @@ export default function Home() {
   const [markerB, setMarkerB] = useState(100);
   const [isDraggingA, setIsDraggingA] = useState(false);
   const [isDraggingB, setIsDraggingB] = useState(false);
-  const [speedValue, setSpeedValue] = useState(1.2);
-  const [volumeValue, setVolumeValue] = useState(71);
+  const [speedValue, setSpeedValue] = useState(1);
+  const [volumeValue, setVolumeValue] = useState(40);
 
   const { volumeRef, handleVolumeDrag } = useVolumeDrag(volumeValue, setVolumeValue);
   const { speedRef, handleSpeedDrag } = useSpeedDrag(speedValue, setSpeedValue);
@@ -93,6 +93,9 @@ export default function Home() {
       // 마커 위치를 새 duration에 맞게 설정
       setMarkerA(0);
       setMarkerB(newDuration);
+      // 초기 볼륨과 재생 속도 적용
+      audioRef.current.volume = volumeValue / 100;
+      audioRef.current.playbackRate = speedValue;
     }
   };
 
@@ -181,6 +184,20 @@ export default function Home() {
       setCurrentTime(newTime);
     }
   };
+
+  // 볼륨 변경 시 오디오에 적용
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volumeValue / 100;
+    }
+  }, [volumeValue]);
+
+  // 재생 속도 변경 시 오디오에 적용
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.playbackRate = speedValue;
+    }
+  }, [speedValue]);
 
   // 컴포넌트 언마운트 시 URL 정리
   useEffect(() => {
