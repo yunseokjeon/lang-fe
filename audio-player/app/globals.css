@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+.slider {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.slider::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 4px;
+}
+
 .slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
@@ -11,6 +21,12 @@
   border-radius: 50%;
   cursor: pointer;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  margin-top: -6px; /* (thumb height - track height) / 2 = (20 - 8) / 2 */
+}
+
+.slider::-moz-range-track {
+  height: 8px;
+  border-radius: 4px;
 }
 
 .slider::-moz-range-thumb {

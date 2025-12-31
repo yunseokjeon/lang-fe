@@ -99,17 +99,27 @@ export default function Home() {
     }
   };
 
-  // 재생 위치 변경 (프로그레스 바 드래그)
+  // 재생 위치 변경 (프로그레스 바 드래그) - A-B 범위 내로 제한
   const handleSeek = (time: number) => {
-    setCurrentTime(time);
+    const clampedTime = Math.max(markerA, Math.min(markerB, time));
+    setCurrentTime(clampedTime);
     if (audioRef.current) {
-      audioRef.current.currentTime = time;
+      audioRef.current.currentTime = clampedTime;
     }
   };
 
   const handleTimeUpdate = () => {
     if (audioRef.current) {
-      setCurrentTime(audioRef.current.currentTime);
+      const time = audioRef.current.currentTime;
+      setCurrentTime(time);
+
+      // Marker B 지점에 도착하면 재생 멈춤
+      if (time >= markerB) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = markerB;
+        setCurrentTime(markerB);
+        setIsPlaying(false);
+      }
     }
   };
 
@@ -122,6 +132,11 @@ export default function Home() {
     if (!audioRef.current || !audioUrl) return;
 
     if (playing) {
+      // 현재 위치가 A-B 범위 밖이면 markerA에서 시작
+      if (currentTime < markerA || currentTime >= markerB) {
+        audioRef.current.currentTime = markerA;
+        setCurrentTime(markerA);
+      }
       audioRef.current.play();
     } else {
       audioRef.current.pause();
@@ -157,33 +172,38 @@ export default function Home() {
     setIsPlaying(false);
   };
 
-  // 5초 뒤로 이동
+  // 5초 뒤로 이동 (A-B 범위 내로 제한)
   const handleRewind = () => {
     if (!audioRef.current) return;
 
     const newTime = currentTime - 5;
-    if (newTime < 0) {
-      audioRef.current.currentTime = 0;
-      setCurrentTime(0);
-    } else {
-      audioRef.current.currentTime = newTime;
-      setCurrentTime(newTime);
-    }
+    const clampedTime = Math.max(markerA, newTime);
+    audioRef.current.currentTime = clampedTime;
+    setCurrentTime(clampedTime);
   };
 
-  // 5초 앞으로 이동
+  // 5초 앞으로 이동 (A-B 범위 내로 제한)
   const handleFastForward = () => {
     if (!audioRef.current) return;
 
     const newTime = currentTime + 5;
-    if (newTime > duration) {
-      audioRef.current.currentTime = duration;
-      setCurrentTime(duration);
-    } else {
-      audioRef.current.currentTime = newTime;
-      setCurrentTime(newTime);
-    }
+    const clampedTime = Math.min(markerB, newTime);
+    audioRef.current.currentTime = clampedTime;
+    setCurrentTime(clampedTime);
   };
+
+  // 마커가 currentTime을 지나갈 때만 슬라이더 위치 조정
+  useEffect(() => {
+    if (!audioRef.current) return;
+
+    if (currentTime < markerA) {
+      audioRef.current.currentTime = markerA;
+      setCurrentTime(markerA);
+    } else if (currentTime > markerB) {
+      audioRef.current.currentTime = markerB;
+      setCurrentTime(markerB);
+    }
+  }, [markerA, markerB]);
 
   // 볼륨 변경 시 오디오에 적용
   useEffect(() => {

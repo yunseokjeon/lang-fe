@@ -35,7 +35,7 @@ export default function ProgressBar({
   const markerAPercent = hasFile ? (markerA / displayDuration) * 100 : 0;
   const markerBPercent = hasFile ? (markerB / displayDuration) * 100 : 100;
 
-  // 프로그레스 퍼센트 계산
+  // 프로그레스 퍼센트 계산 (전체 duration 기준)
   const progressPercent = hasFile ? (currentTime / displayDuration) * 100 : 0;
 
   return (
@@ -91,7 +91,7 @@ export default function ProgressBar({
           {/* Progress Bar */}
           <input
             type="range"
-            min="0"
+            min={0}
             max={displayDuration}
             value={currentTime}
             onChange={(e) => onSeek(Number(e.target.value))}
