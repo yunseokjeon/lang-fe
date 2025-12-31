@@ -1,4 +1,4 @@
-import { RefObject } from "react";
+import { RefObject, useRef } from "react";
 import { formatShortTime } from "../utils/time";
 
 interface ProgressBarProps {
@@ -27,6 +27,8 @@ export default function ProgressBar({
   progressRef,
   handleMarkerDrag,
 }: ProgressBarProps) {
+  const trackRef = useRef<HTMLDivElement>(null);
+
   // duration이 0일 때 기본값 사용 (UI 표시용)
   const displayDuration = duration || 100;
   const hasFile = duration > 0;
@@ -37,6 +39,34 @@ export default function ProgressBar({
 
   // 프로그레스 퍼센트 계산 (전체 duration 기준)
   const progressPercent = hasFile ? (currentTime / displayDuration) * 100 : 0;
+
+  // 슬라이더 드래그 핸들러
+  const handleSliderInteraction = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!hasFile || !trackRef.current) return;
+
+    const updatePosition = (clientX: number) => {
+      if (!trackRef.current) return;
+      const rect = trackRef.current.getBoundingClientRect();
+      const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
+      const newTime = (x / rect.width) * displayDuration;
+      onSeek(newTime);
+    };
+
+    updatePosition(e.clientX);
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      moveEvent.preventDefault();
+      updatePosition(moveEvent.clientX);
+    };
+
+    const handleMouseUp = () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+  };
 
   return (
     <div className="px-6" style={{ paddingBottom: "2.5rem" }}>
@@ -88,19 +118,38 @@ export default function ProgressBar({
             </div>
           </div>
 
-          {/* Progress Bar */}
-          <input
-            type="range"
-            min={0}
-            max={displayDuration}
-            value={currentTime}
-            onChange={(e) => onSeek(Number(e.target.value))}
-            disabled={!hasFile}
-            className={`w-full h-2 bg-teal-600 rounded-lg appearance-none slider relative z-10 mt-8 ${hasFile ? 'cursor-pointer' : 'cursor-not-allowed'}`}
-            style={{
-              background: `linear-gradient(to right, #14b8a6 0%, #14b8a6 ${progressPercent}%, #0d9488 ${progressPercent}%, #0d9488 100%)`,
-            }}
-          />
+          {/* Custom Progress Bar Container */}
+          <div
+            ref={trackRef}
+            className={`relative mt-8 z-10 ${hasFile ? 'cursor-pointer' : 'cursor-not-allowed'}`}
+            style={{ height: "20px", display: "flex", alignItems: "center" }}
+            onMouseDown={handleSliderInteraction}
+          >
+            {/* Track */}
+            <div
+              style={{
+                width: "100%",
+                height: "8px",
+                borderRadius: "4px",
+                background: `linear-gradient(to right, #14b8a6 0%, #14b8a6 ${progressPercent}%, #0d9488 ${progressPercent}%, #0d9488 100%)`,
+              }}
+            />
+            {/* Thumb */}
+            <div
+              style={{
+                position: "absolute",
+                width: "20px",
+                height: "20px",
+                backgroundColor: "white",
+                borderRadius: "50%",
+                left: `${progressPercent}%`,
+                top: "50%",
+                transform: "translate(-50%, -50%)",
+                boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
+                zIndex: 20,
+              }}
+            />
+          </div>
         </div>
       </div>
     </div>
