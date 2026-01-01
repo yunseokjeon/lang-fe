@@ -13,6 +13,10 @@ interface ControlGridProps {
   repeatMode: RepeatMode;
   repeatCount: number;
   onRepeatModeChange: (mode: RepeatMode) => void;
+  duration: number;
+  currentTime: number;
+  onSetMarkerA: (time: number) => void;
+  onSetMarkerB: (time: number) => void;
 }
 
 export default function ControlGrid({
@@ -25,6 +29,10 @@ export default function ControlGrid({
   repeatMode,
   repeatCount,
   onRepeatModeChange,
+  duration,
+  currentTime,
+  onSetMarkerA,
+  onSetMarkerB,
 }: ControlGridProps) {
   const handleRepeatClick = (mode: RepeatMode) => {
     if (repeatMode === mode) {
@@ -116,13 +124,25 @@ export default function ControlGrid({
         </button>
 
         {/* Row 2: ALL, A, B */}
-        <button className="bg-slate-500/60 hover:bg-slate-500 text-white rounded-xl h-12 flex items-center justify-center transition text-sm font-bold">
+        <button
+          onClick={() => {
+            onSetMarkerA(0);
+            onSetMarkerB(duration);
+          }}
+          className="bg-slate-500/60 hover:bg-slate-500 text-white rounded-xl h-12 flex items-center justify-center transition text-sm font-bold"
+        >
           ALL
         </button>
-        <button className="bg-slate-500/60 hover:bg-slate-500 text-white rounded-xl h-12 flex items-center justify-center transition text-sm font-bold">
+        <button
+          onClick={() => onSetMarkerA(currentTime)}
+          className="bg-slate-500/60 hover:bg-slate-500 text-white rounded-xl h-12 flex items-center justify-center transition text-sm font-bold"
+        >
           A
         </button>
-        <button className="bg-slate-500/60 hover:bg-slate-500 text-white rounded-xl h-12 flex items-center justify-center transition text-sm font-bold">
+        <button
+          onClick={() => onSetMarkerB(currentTime)}
+          className="bg-slate-500/60 hover:bg-slate-500 text-white rounded-xl h-12 flex items-center justify-center transition text-sm font-bold"
+        >
           B
         </button>
       </div>

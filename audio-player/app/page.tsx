@@ -315,6 +315,10 @@ export default function Home() {
             setRepeatMode(mode);
             setRepeatCount(0);
           }}
+          duration={duration}
+          currentTime={currentTime}
+          onSetMarkerA={setMarkerA}
+          onSetMarkerB={setMarkerB}
         />
         <NumberButtons />
 
