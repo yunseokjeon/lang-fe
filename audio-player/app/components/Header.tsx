@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Download, Menu, X, Music } from "lucide-react";
+import { Upload, Menu, X, Music } from "lucide-react";
 import { MediaFile } from "../page";
 
 interface HeaderProps {
@@ -50,7 +50,7 @@ export default function Header({
           onClick={handleClick}
           className="p-2 hover:bg-white/10 rounded-lg transition"
         >
-          <Download size={20} />
+          <Upload size={20} />
         </button>
         <button
           onClick={() => setIsMenuOpen(true)}
@@ -78,7 +78,7 @@ export default function Header({
                 <div className="text-center py-8 text-white/70">
                   <Music size={40} className="mx-auto mb-2 opacity-50" />
                   <p>No files uploaded</p>
-                  <p className="text-sm mt-1">Add files using the Download button</p>
+                  <p className="text-sm mt-1">Add files using the Upload button</p>
                 </div>
               ) : (
                 <ul className="space-y-2">

@@ -29,6 +29,8 @@ export default function Home() {
   const [isDraggingB, setIsDraggingB] = useState(false);
   const [speedValue, setSpeedValue] = useState(1);
   const [volumeValue, setVolumeValue] = useState(40);
+  const [repeatMode, setRepeatMode] = useState<'none' | 'x5' | 'x10' | 'infinite'>('none');
+  const [repeatCount, setRepeatCount] = useState(0);
 
   const { volumeRef, handleVolumeDrag } = useVolumeDrag(volumeValue, setVolumeValue);
   const { speedRef, handleSpeedDrag } = useSpeedDrag(speedValue, setSpeedValue);
@@ -113,12 +115,37 @@ export default function Home() {
       const time = audioRef.current.currentTime;
       setCurrentTime(time);
 
-      // Marker B 지점에 도착하면 재생 멈춤
+      // Marker B 지점에 도착했을 때
       if (time >= markerB) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = markerB;
-        setCurrentTime(markerB);
-        setIsPlaying(false);
+        if (repeatMode === 'infinite') {
+          // 무한 반복: 마커 A로 돌아가서 계속 재생
+          audioRef.current.currentTime = markerA;
+          setCurrentTime(markerA);
+        } else if (repeatMode === 'x5' || repeatMode === 'x10') {
+          const maxCount = repeatMode === 'x5' ? 5 : 10;
+          const newCount = repeatCount + 1;
+
+          if (newCount >= maxCount) {
+            // 목표 횟수 도달: 재생 멈춤 및 모드 초기화
+            audioRef.current.pause();
+            audioRef.current.currentTime = markerB;
+            setCurrentTime(markerB);
+            setIsPlaying(false);
+            setRepeatMode('none');
+            setRepeatCount(0);
+          } else {
+            // 아직 횟수가 남음: 카운트 증가 및 마커 A로 돌아가서 재생
+            setRepeatCount(newCount);
+            audioRef.current.currentTime = markerA;
+            setCurrentTime(markerA);
+          }
+        } else {
+          // 반복 모드 없음: 재생 멈춤
+          audioRef.current.pause();
+          audioRef.current.currentTime = markerB;
+          setCurrentTime(markerB);
+          setIsPlaying(false);
+        }
       }
     }
   };
@@ -203,6 +230,11 @@ export default function Home() {
       audioRef.current.currentTime = markerB;
       setCurrentTime(markerB);
     }
+
+    // 마커가 변경되면 반복 카운트 리셋 (x5, x10 모드일 때만)
+    if (repeatMode === 'x5' || repeatMode === 'x10') {
+      setRepeatCount(0);
+    }
   }, [markerA, markerB]);
 
   // 볼륨 변경 시 오디오에 적용
@@ -277,6 +309,16 @@ export default function Home() {
           speedRef={speedRef}
           handleVolumeDrag={handleVolumeDrag}
           handleSpeedDrag={handleSpeedDrag}
+          repeatMode={repeatMode}
+          repeatCount={repeatCount}
+          onRepeatModeChange={(mode) => {
+            setRepeatMode(mode);
+            setRepeatCount(0);
+          }}
+          duration={duration}
+          currentTime={currentTime}
+          onSetMarkerA={setMarkerA}
+          onSetMarkerB={setMarkerB}
         />
         <NumberButtons />
 
