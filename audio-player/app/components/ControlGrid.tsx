@@ -1,6 +1,8 @@
 import { RefObject } from "react";
 import { Volume2, Gauge, Repeat } from "lucide-react";
 
+type RepeatMode = 'none' | 'x5' | 'x10' | 'infinite';
+
 interface ControlGridProps {
   volumeValue: number;
   speedValue: number;
@@ -8,6 +10,9 @@ interface ControlGridProps {
   speedRef: RefObject<HTMLDivElement | null>;
   handleVolumeDrag: (e: React.MouseEvent<HTMLDivElement>) => void;
   handleSpeedDrag: (e: React.MouseEvent<HTMLDivElement>) => void;
+  repeatMode: RepeatMode;
+  repeatCount: number;
+  onRepeatModeChange: (mode: RepeatMode) => void;
 }
 
 export default function ControlGrid({
@@ -17,7 +22,28 @@ export default function ControlGrid({
   speedRef,
   handleVolumeDrag,
   handleSpeedDrag,
+  repeatMode,
+  repeatCount,
+  onRepeatModeChange,
 }: ControlGridProps) {
+  const handleRepeatClick = (mode: RepeatMode) => {
+    if (repeatMode === mode) {
+      // 이미 선택된 모드를 다시 클릭하면 해제
+      onRepeatModeChange('none');
+    } else {
+      onRepeatModeChange(mode);
+    }
+  };
+
+  const getButtonStyle = (mode: RepeatMode) => {
+    const isActive = repeatMode === mode;
+    if (mode === 'infinite' && isActive) {
+      return "bg-teal-500 text-white ring-2 ring-teal-300 shadow-[0_0_12px_rgba(20,184,166,0.6)]";
+    }
+    return isActive
+      ? "bg-teal-500 text-white"
+      : "bg-slate-500/60 hover:bg-slate-500 text-white";
+  };
   return (
     <div className="px-4" style={{ paddingBottom: "2rem" }}>
       <div
@@ -63,16 +89,29 @@ export default function ControlGrid({
         </div>
 
         {/* Row 1: Repeat x5, Repeat x10, Infinite */}
-        <button className="bg-slate-500/60 hover:bg-slate-500 text-white rounded-xl h-12 flex flex-col items-center justify-center transition">
+        <button
+          onClick={() => handleRepeatClick('x5')}
+          className={`${getButtonStyle('x5')} rounded-xl h-12 flex flex-col items-center justify-center transition`}
+        >
           <Repeat size={18} />
-          <span className="text-[10px] font-semibold -mt-0.5">x5</span>
+          <span className="text-[10px] font-semibold -mt-0.5">
+            {repeatMode === 'x5' ? `${repeatCount}/5` : 'x5'}
+          </span>
         </button>
-        <button className="bg-slate-500/60 hover:bg-slate-500 text-white rounded-xl h-12 flex flex-col items-center justify-center transition">
+        <button
+          onClick={() => handleRepeatClick('x10')}
+          className={`${getButtonStyle('x10')} rounded-xl h-12 flex flex-col items-center justify-center transition`}
+        >
           <Repeat size={18} />
-          <span className="text-[10px] font-semibold -mt-0.5">x10</span>
+          <span className="text-[10px] font-semibold -mt-0.5">
+            {repeatMode === 'x10' ? `${repeatCount}/10` : 'x10'}
+          </span>
         </button>
-        <button className="bg-slate-500/60 hover:bg-slate-500 text-white rounded-xl h-12 flex flex-col items-center justify-center transition">
-          <span className="text-xl font-light leading-none">∞</span>
+        <button
+          onClick={() => handleRepeatClick('infinite')}
+          className={`${getButtonStyle('infinite')} rounded-xl h-12 flex flex-col items-center justify-center transition`}
+        >
+          <span className={`text-xl font-light leading-none ${repeatMode === 'infinite' ? 'animate-pulse' : ''}`}>∞</span>
           <span className="text-[10px] font-semibold -mt-0.5">Inf</span>
         </button>
 
