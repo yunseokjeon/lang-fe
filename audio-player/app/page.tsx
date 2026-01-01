@@ -9,6 +9,7 @@ import ProgressBar from "./components/ProgressBar";
 import PlaybackControls from "./components/PlaybackControls";
 import ControlGrid from "./components/ControlGrid";
 import NumberButtons, { MarkerSlot } from "./components/NumberButtons";
+import TipsDisplay from "./components/TipsDisplay";
 
 export interface MediaFile {
   file: File;
@@ -344,16 +345,8 @@ export default function Home() {
           onSetMarkerB={setMarkerB}
         />
 
-        {/* Bottom Display Area */}
-        <div className="bg-slate-200 px-4 pt-3 pb-4">
-          <div className="text-slate-800">
-            <div className="text-base font-bold">&apos;불리&apos; Best of Best 향수</div>
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-rose-500 font-semibold">LIVE쇼핑</span>
-              <span>역대급 ~25% 할인 &gt;</span>
-            </div>
-          </div>
-        </div>
+        {/* Bottom Display Area - Tips */}
+        <TipsDisplay />
       </div>
     </div>
   );
