@@ -8,7 +8,7 @@ import TimeDisplay from "./components/TimeDisplay";
 import ProgressBar from "./components/ProgressBar";
 import PlaybackControls from "./components/PlaybackControls";
 import ControlGrid from "./components/ControlGrid";
-import NumberButtons from "./components/NumberButtons";
+import NumberButtons, { MarkerSlot } from "./components/NumberButtons";
 
 export interface MediaFile {
   file: File;
@@ -31,6 +31,14 @@ export default function Home() {
   const [volumeValue, setVolumeValue] = useState(40);
   const [repeatMode, setRepeatMode] = useState<'none' | 'x5' | 'x10' | 'infinite'>('none');
   const [repeatCount, setRepeatCount] = useState(0);
+  const [selectedSlot, setSelectedSlot] = useState(1);
+  const [slots, setSlots] = useState<Record<number, MarkerSlot | null>>({
+    1: null,
+    2: null,
+    3: null,
+    4: null,
+    5: null,
+  });
 
   const { volumeRef, handleVolumeDrag } = useVolumeDrag(volumeValue, setVolumeValue);
   const { speedRef, handleSpeedDrag } = useSpeedDrag(speedValue, setSpeedValue);
@@ -237,6 +245,14 @@ export default function Home() {
     }
   }, [markerA, markerB]);
 
+  // 마커가 변경되면 현재 선택된 슬롯에 저장
+  useEffect(() => {
+    setSlots((prev) => ({
+      ...prev,
+      [selectedSlot]: { markerA, markerB },
+    }));
+  }, [markerA, markerB, selectedSlot]);
+
   // 볼륨 변경 시 오디오에 적용
   useEffect(() => {
     if (audioRef.current) {
@@ -320,7 +336,13 @@ export default function Home() {
           onSetMarkerA={setMarkerA}
           onSetMarkerB={setMarkerB}
         />
-        <NumberButtons />
+        <NumberButtons
+          selectedSlot={selectedSlot}
+          slots={slots}
+          onSlotSelect={setSelectedSlot}
+          onSetMarkerA={setMarkerA}
+          onSetMarkerB={setMarkerB}
+        />
 
         {/* Bottom Display Area */}
         <div className="bg-slate-200 px-4 pt-3 pb-4">
