@@ -61,3 +61,83 @@ audio-player/
 3. **반복 재생**: x5, x10, ∞ 버튼으로 반복 모드 선택
 4. **구간 저장**: 1-5 번호 버튼으로 현재 구간 저장/불러오기
 5. **전체 선택**: ALL 버튼으로 전체 구간 선택
+
+## 배포
+
+### 배포 아키텍처
+
+```
+GitHub (main branch)
+    │
+    ▼ push
+GitHub Actions
+    │
+    ├─▶ Docker 이미지 빌드
+    │
+    ▼
+Docker Hub
+    │
+    ▼ pull
+AWS EC2
+    │
+    ▼
+http://<EC2-IP>:80
+```
+
+### 자동 배포
+
+`main` 브랜치에 push하면 GitHub Actions가 자동으로 배포를 수행합니다.
+
+수동으로 배포하려면:
+1. GitHub → Actions → "Deploy to EC2"
+2. "Run workflow" 버튼 클릭
+
+### GitHub Secrets 설정
+
+GitHub 저장소 → Settings → Secrets and variables → Actions에서 다음 값들을 설정해야 합니다:
+
+| Secret Name | 설명 | 예시 |
+|-------------|------|------|
+| `DOCKERHUB_USERNAME` | Docker Hub 사용자명 | `username` |
+| `DOCKERHUB_TOKEN` | Docker Hub Access Token | Docker Hub에서 발급 |
+| `EC2_HOST` | EC2 퍼블릭 IP 또는 DNS | `13.49.233.52` |
+| `EC2_USER` | EC2 SSH 사용자명 | `ec2-user` |
+| `EC2_SSH_KEY` | EC2 SSH 프라이빗 키 (.pem 파일 내용 전체) | `-----BEGIN RSA...` |
+
+### EC2 인스턴스 설정
+
+#### 1. Docker 설치 (Amazon Linux 2023)
+
+```bash
+sudo dnf update -y
+sudo dnf install -y docker
+sudo systemctl start docker
+sudo systemctl enable docker
+sudo usermod -aG docker ec2-user
+exit  # 재접속 필요
+```
+
+#### 2. 보안 그룹 인바운드 규칙
+
+| 유형 | 포트 | 소스 |
+|-----|-----|-----|
+| SSH | 22 | 0.0.0.0/0 (또는 특정 IP) |
+| HTTP | 80 | 0.0.0.0/0 |
+
+### 로컬에서 Docker 테스트
+
+```bash
+cd audio-player
+docker build -t audio-player .
+docker run -p 3000:3000 audio-player
+```
+
+브라우저에서 http://localhost:3000 접속
+
+### 배포 관련 파일
+
+| 파일 | 설명 |
+|-----|------|
+| `audio-player/Dockerfile` | Docker 이미지 빌드 설정 |
+| `audio-player/.dockerignore` | Docker 빌드 시 제외할 파일 |
+| `.github/workflows/deploy.yml` | GitHub Actions 워크플로우 |
