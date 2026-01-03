@@ -59,3 +59,9 @@
   ---
   참고: Amazon Linux 2 (구버전)를 사용한다면 dnf 대신 yum을 사용
 ```
+
+# Docker Hub username
+
+1. https://hub.docker.com 에 로그인
+2. 오른쪽 상단 프로필 클릭
+3. 표시되는 username 확인
