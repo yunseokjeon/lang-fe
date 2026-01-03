@@ -19,22 +19,23 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push Docker image
-        env:
-          DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/audio-player
         run: |
           cd audio-player
-          docker build -t $DOCKER_IMAGE:${{ github.sha }} -t $DOCKER_IMAGE:latest .
-          docker push $DOCKER_IMAGE:${{ github.sha }}
-          docker push $DOCKER_IMAGE:latest
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/audio-player:${{ github.sha }} -t ${{ secrets.DOCKERHUB_USERNAME }}/audio-player:latest .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/audio-player:${{ github.sha }}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/audio-player:latest
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.0
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          envs: DOCKERHUB_USERNAME
           script: |
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/audio-player:latest
+            docker pull ${DOCKERHUB_USERNAME}/audio-player:latest
             docker stop audio-player || true
             docker rm audio-player || true
-            docker run -d --name audio-player -p 80:3000 --restart unless-stopped ${{ secrets.DOCKERHUB_USERNAME }}/audio-player:latest
+            docker run -d --name audio-player -p 80:3000 --restart unless-stopped ${DOCKERHUB_USERNAME}/audio-player:latest
